@@ -16,8 +16,8 @@ public class ModItems {
             "export_marker",
             () -> new BlockItem(ModBlocks.EXPORT_MARKER.get(), new Item.Properties())
     );
-  /*  public static final RegistryObject<Item> EXPORT_STICK = ITEMS.register(
+   public static final RegistryObject<Item> EXPORT_STICK = ITEMS.register(
             "export_stick",
             () -> new ExportStickItem(new Item.Properties())
-    );*/
+    );
 }
