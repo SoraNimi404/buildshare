@@ -1,1 +1,9 @@
-// mods.toml
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+[[mods]]
+modId="buildshare"
+version="1.0.0"
+displayName="Build Share Mod"
+authors="SoroNimi404"
+description="A mod for exporting and importing structures."

@@ -1,1 +1,4 @@
-// en_us.json
+{
+  "block.buildshare.export_marker": "Export Marker",
+  "item.buildshare.export_marker": "Export Marker"
+}

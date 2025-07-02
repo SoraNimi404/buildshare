@@ -1,1 +1,7 @@
-// export_marker.json
+{
+	"parent": "block/cube_all",
+	"textures": {
+		"all": "buildshare:block/export_marker",
+		"particle": "buildshare:block/export_marker"
+	}
+}

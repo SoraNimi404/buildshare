@@ -1,5 +1,5 @@
 // ExportStickItem.java
-package com.soracraft.buildshare.item;
+package com.soranimi404.buildshare.item;
 
 import net.minecraft.world.item.Item;
 
