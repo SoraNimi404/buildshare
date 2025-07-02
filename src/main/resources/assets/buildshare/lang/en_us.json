@@ -1,5 +1,6 @@
 {
   "block.buildshare.export_marker": "Export Marker",
   "item.buildshare.export_marker": "Export Marker",
-  "item.buildshare.export_export_stick": "Export Stick"
+  "item.buildshare.export_stick": "Export Stick",
+  "itemGroup.buildshare": "BuildShare"
 }
