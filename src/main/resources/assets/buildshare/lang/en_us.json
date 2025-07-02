@@ -2,5 +2,7 @@
   "block.buildshare.export_marker": "Export Marker",
   "item.buildshare.export_marker": "Export Marker",
   "item.buildshare.export_stick": "Export Stick",
+  "block.buildshare.import_block": "Import Block",
+  "item.buildshare.import_block": "Import Block",
   "itemGroup.buildshare": "BuildShare"
 }

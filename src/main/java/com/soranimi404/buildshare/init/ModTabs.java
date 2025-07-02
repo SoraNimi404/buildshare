@@ -19,8 +19,10 @@ public class ModTabs {
                     .icon(() -> new ItemStack(ModItems.EXPORT_STICK.get()))
                     .title(Component.translatable("itemGroup.buildshare"))
                     .displayItems((params, output) -> {
-                        output.accept(ModItems.EXPORT_STICK.get());
+
                         output.accept(ModItems.EXPORT_MARKER_ITEM.get());
+                        output.accept(ModItems.EXPORT_STICK.get());
+                        output.accept(ModItems.IMPORT_BLOCK_ITEM.get());
                     })
                     .build()
     );

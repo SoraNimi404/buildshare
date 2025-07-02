@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "buildshare:block/import_block" }
+  }
+}

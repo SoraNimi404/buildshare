@@ -20,4 +20,8 @@ public class ModItems {
             "export_stick",
             () -> new ExportStickItem(new Item.Properties())
     );
+    public static final RegistryObject<Item> IMPORT_BLOCK_ITEM = ITEMS.register(
+            "import_block",
+            () -> new BlockItem(ModBlocks.IMPORT_BLOCK.get(), new Item.Properties())
+    );
 }
