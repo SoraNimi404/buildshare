@@ -1,6 +1,6 @@
 package com.soranimi404.buildshare.block;
 
-import com.soranimi404.buildshare.menu.ImportMenu;
+import com.soranimi404.buildshare.menu.StructureSelectionMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,11 +28,12 @@ public class ImportBlock extends Block {
             // 打开结构选择菜单
             MenuProvider menuProvider = new SimpleMenuProvider(
                     (containerId, playerInventory, playerEntity) ->
-                            new ImportMenu(containerId, playerInventory),
-                    Component.literal("选择建筑")
+                            new StructureSelectionMenu(containerId, playerInventory),
+                    Component.literal("选择要导入的建筑")
             );
 
-            NetworkHooks.openScreen(serverPlayer, menuProvider, pos);
+            NetworkHooks.openScreen(serverPlayer, menuProvider, buf -> buf.writeBlockPos(pos));
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

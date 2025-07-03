@@ -1,7 +1,7 @@
 package com.soranimi404.buildshare.init;
 
-import com.soranimi404.buildshare.menu.ImportMenu;
 import com.soranimi404.buildshare.menu.MaterialSubmitMenu;
+import com.soranimi404.buildshare.menu.StructureSelectionMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.registries.DeferredRegister;
@@ -13,14 +13,15 @@ public class ModMenus {
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, "buildshare");
 
     // 结构选择菜单
-    public static final RegistryObject<MenuType<ImportMenu>> IMPORT_MENU = MENUS.register(
-            "import_menu",
-            () -> IForgeMenuType.create(ImportMenu::new)
+    public static final RegistryObject<MenuType<StructureSelectionMenu>> STRUCTURE_SELECTION_MENU = MENUS.register(
+            "structure_selection_menu",
+            () -> IForgeMenuType.create(StructureSelectionMenu::new)
     );
 
     // 材料提交菜单
-    public static final RegistryObject<MenuType<MaterialSubmitMenu>> MATERIAL_MENU = MENUS.register(
-            "material_menu",
-            () -> IForgeMenuType.create(MaterialSubmitMenu::new)
+    public static final RegistryObject<MenuType<MaterialSubmitMenu>> MATERIAL_SUBMIT_MENU = MENUS.register(
+            "material_submit_menu",
+            () -> IForgeMenuType.create((windowId, inv, data) ->
+                    new MaterialSubmitMenu(windowId, inv, data.readBlockPos(), data.readUtf()))
     );
 }

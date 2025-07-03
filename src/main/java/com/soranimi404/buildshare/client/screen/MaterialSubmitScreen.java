@@ -1,80 +1,107 @@
 package com.soranimi404.buildshare.client.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.soranimi404.buildshare.menu.MaterialSubmitMenu;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Map;
 
 public class MaterialSubmitScreen extends AbstractContainerScreen<MaterialSubmitMenu> {
-    private static final ResourceLocation TEXTURE =
-            new ResourceLocation("buildshare", "textures/gui/material_submit.png");
+
+    // 使用原版工作台UI纹理
+    private static final ResourceLocation CRAFTING_TABLE_TEXTURE =
+            new ResourceLocation("textures/gui/container/crafting_table.png");
 
     public MaterialSubmitScreen(MaterialSubmitMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 166;
+        this.imageHeight = 204;
     }
 
     @Override
-    protected void renderBg(PoseStack poseStack, float partialTicks, int mouseX, int mouseY) {
-        RenderSystem.setShaderTexture(0, TEXTURE);
-        int x = (this.width - this.imageWidth) / 2;
-        int y = (this.height - this.imageHeight) / 2;
-        this.blit(poseStack, x, y, 0, 0, this.imageWidth, this.imageHeight);
+    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
+        renderBackground(guiGraphics);
+        int x = (width - imageWidth) / 2;
+        int y = (height - imageHeight) / 2;
 
-        // 渲染材料需求
-        int textY = y + 5;
+        // 使用 GuiGraphics 绘制背景
+        guiGraphics.blit(CRAFTING_TABLE_TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
+
+        // 绘制材料需求
+        int textY = y + 10;
         for (Map.Entry<String, Integer> entry : menu.requiredMaterials.entrySet()) {
             int submitted = menu.submittedMaterials.getOrDefault(entry.getKey(), 0);
-            String status = submitted >= entry.getValue() ? "§a✓" : "§c✗";
+            String status = submitted >= entry.getValue() ? "✓" : "✗";
+            String colorCode = submitted >= entry.getValue() ? "§a" : "§c";
 
-            String text = String.format("%s %s: %d/%d",
-                    status, getItemName(entry.getKey()), submitted, entry.getValue());
+            String itemName = getItemName(entry.getKey());
+            String text = String.format("%s%s %s: %d/%d",
+                    colorCode, status, itemName, submitted, entry.getValue());
 
-            font.draw(poseStack, text, x + 60, textY, 0xFFFFFF);
-            textY += 10;
+            // 使用 GuiGraphics 绘制文本
+            guiGraphics.drawString(
+                    font,
+                    text,
+                    x + 10,
+                    textY,
+                    0xFFFFFF,
+                    false // 不绘制阴影
+            );
+            textY += 12;
+        }
+
+        // 生成按钮 - 使用 GuiGraphics 绘制矩形和文本
+        if (menu.canGenerate()) {
+            // 绘制绿色按钮
+            guiGraphics.fill(x + 100, y + 150, x + 150, y + 170, 0xFF00FF00);
+
+            // 绘制按钮文本
+            guiGraphics.drawString(
+                    font,
+                    "生成建筑",
+                    x + 108,
+                    y + 156,
+                    0x000000,
+                    false // 不绘制阴影
+            );
         }
     }
 
     @Override
-    protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
-        super.renderLabels(poseStack, mouseX, mouseY);
-
-        // 生成按钮
-        if (menu.canGenerate()) {
-            int buttonX = (this.imageWidth - 50) / 2;
-            int buttonY = this.imageHeight - 30;
-
-            fill(poseStack, buttonX, buttonY, buttonX + 50, buttonY + 20, 0xFF00FF00);
-            font.draw(poseStack, "生成", buttonX + 15, buttonY + 6, 0xFFFFFF);
-        }
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        super.render(guiGraphics, mouseX, mouseY, partialTicks);
+        renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        int x = (width - imageWidth) / 2;
+        int y = (height - imageHeight) / 2;
+
         // 检查是否点击生成按钮
-        if (menu.canGenerate()) {
-            int buttonX = (this.width - this.imageWidth) / 2 + (this.imageWidth - 50) / 2;
-            int buttonY = (this.height - this.imageHeight) / 2 + this.imageHeight - 30;
+        if (menu.canGenerate() &&
+                mouseX >= x + 100 && mouseX <= x + 150 &&
+                mouseY >= y + 150 && mouseY <= y + 170) {
 
-            if (mouseX >= buttonX && mouseX <= buttonX + 50 &&
-                    mouseY >= buttonY && mouseY <= buttonY + 20) {
-
-                // 发送生成请求到服务器
-                // 需要实现网络包处理
-                return true;
-            }
+            // 调用菜单的无参数方法
+            menu.generateStructure();
+            return true;
         }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private String getItemName(String itemId) {
-        ResourceLocation id = new ResourceLocation(itemId);
-        return ForgeRegistries.ITEMS.getValue(id).getDescription().getString();
+        // 使用新的 ResourceLocation 解析方式避免弃用警告
+        ResourceLocation resource = ResourceLocation.tryParse(itemId);
+        if (resource != null) {
+            Item item = ForgeRegistries.ITEMS.getValue(resource);
+            return item != null ? item.getDescription().getString() : itemId;
+        }
+        return itemId; // 如果解析失败，返回原始ID
     }
 }

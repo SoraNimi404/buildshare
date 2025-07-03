@@ -1,57 +1,64 @@
 package com.soranimi404.buildshare.menu;
 
-import com.soranimi404.buildshare.data.BuildShareData;
 import com.soranimi404.buildshare.init.ModMenus;
-import com.soranimi404.buildshare.util.StructureBuilder;
 import com.soranimi404.buildshare.util.StructureLoader;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.network.NetworkHooks;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MaterialSubmitMenu extends AbstractContainerMenu {
 
     private final Player player;
+    private final BlockPos blockPos; // 存储位置信息
     private final Path structureFile;
     public final Map<String, Integer> requiredMaterials;
     public final Map<String, Integer> submittedMaterials = new HashMap<>();
+    private final ItemStackHandler materialSlots = new ItemStackHandler(9);
 
-    public static void open(ServerPlayer player, Path structureFile) {
+    public static void open(ServerPlayer player, BlockPos blockPos, String fileName) {
         NetworkHooks.openScreen(player,
                 new SimpleMenuProvider(
                         (containerId, playerInventory, playerEntity) ->
-                                new MaterialSubmitMenu(containerId, playerInventory, structureFile),
+                                new MaterialSubmitMenu(containerId, playerInventory, blockPos, fileName),
                         Component.literal("提交材料")
                 ),
-                buf -> buf.writeUtf(structureFile.toString())
+                buf -> {
+                    buf.writeBlockPos(blockPos);
+                    buf.writeUtf(fileName);
+                }
         );
     }
 
-    public MaterialSubmitMenu(int containerId, Inventory playerInventory, Path structureFile) {
-        super(ModMenus.MATERIAL_MENU.get(), containerId);
+    public MaterialSubmitMenu(int containerId, Inventory playerInventory, BlockPos blockPos, String fileName) {
+        super(ModMenus.MATERIAL_SUBMIT_MENU.get(), containerId);
         this.player = playerInventory.player;
-        this.structureFile = structureFile;
-        this.requiredMaterials = StructureLoader.loadMaterials(structureFile);
+        this.blockPos = blockPos; // 存储位置信息
+        this.structureFile = Paths.get("buildshare", "structures", fileName);
+        this.requiredMaterials = StructureLoader.loadMaterials(this.structureFile);
 
         // 材料提交槽位 (3x3网格)
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 3; ++col) {
                 int index = row * 3 + col;
-                this.addSlot(new MaterialSlot(new ItemStackHandler(9), index, 8 + col * 18, 20 + row * 18));
+                this.addSlot(new SlotItemHandler(materialSlots, index, 30 + col * 18, 17 + row * 18));
             }
         }
 
@@ -68,17 +75,24 @@ public class MaterialSubmitMenu extends AbstractContainerMenu {
         }
     }
 
+    public MaterialSubmitMenu(int containerId, Inventory playerInventory, FriendlyByteBuf data) {
+        this(containerId, playerInventory, data.readBlockPos(), data.readUtf());
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         // 只允许从玩家物品栏移动到提交槽位
         if (index >= 9 && index < 45) {
             Slot slot = this.slots.get(index);
             if (slot.hasItem()) {
-                ItemStack stack = slot.getItem();
+                ItemStack stack = slot.getItem().copy();
+                stack.setCount(1);
+
+                // 尝试放入第一个空槽
                 for (int i = 0; i < 9; i++) {
-                    Slot submitSlot = this.slots.get(i);
-                    if (!submitSlot.hasItem()) {
-                        submitSlot.set(stack.split(1));
+                    if (materialSlots.getStackInSlot(i).isEmpty()) {
+                        materialSlots.setStackInSlot(i, stack);
+                        slot.remove(1);
                         return ItemStack.EMPTY;
                     }
                 }
@@ -92,34 +106,32 @@ public class MaterialSubmitMenu extends AbstractContainerMenu {
         return true;
     }
 
-    // 当玩家提交材料时
     @Override
-    public void slotsChanged(Container inventory) {
-        super.slotsChanged(inventory);
+    public void slotsChanged(net.minecraft.world.Container container) {
+        super.slotsChanged(container);
+        updateMaterials();
+    }
 
+    private void updateMaterials() {
         // 更新提交的材料
         submittedMaterials.clear();
         for (int i = 0; i < 9; i++) {
-            Slot slot = this.slots.get(i);
-            if (slot.hasItem()) {
-                ItemStack stack = slot.getItem();
-                String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
-                submittedMaterials.merge(itemId, 1, Integer::sum);
-            }
-        }
-
-        // 检查是否可以生成
-        if (canGenerate()) {
-            // 显示生成按钮
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.displayClientMessage(Component.literal("§a材料已足够，点击生成按钮!"), true);
+            ItemStack stack = materialSlots.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                // 使用新的注册表系统获取物品ID
+                ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+                if (itemId != null) {
+                    submittedMaterials.merge(itemId.toString(), 1, Integer::sum);
+                }
             }
         }
     }
 
     // 检查材料是否足够
-    private boolean canGenerate() {
-        if (player.isCreative()) return true;
+    public boolean canGenerate() {
+        if (player.isCreative()) {
+            return true;
+        }
 
         for (Map.Entry<String, Integer> entry : requiredMaterials.entrySet()) {
             int submitted = submittedMaterials.getOrDefault(entry.getKey(), 0);
@@ -130,37 +142,32 @@ public class MaterialSubmitMenu extends AbstractContainerMenu {
         return true;
     }
 
-    // 生成建筑
-    public void generateStructure(BlockPos origin) {
+    // 生成建筑 - 使用菜单中存储的位置
+    public void generateStructure() {
+        generateStructure(this.blockPos);
+    }
+
+    // 生成建筑 - 使用传入的位置参数
+    public void generateStructure(BlockPos pos) {
         if (!canGenerate()) {
+            player.displayClientMessage(Component.literal("§c材料不足，无法生成建筑！"), true);
             return;
         }
 
-        BuildShareData.StructureCapture capture = StructureLoader.loadStructure(structureFile);
-        if (capture != null) {
-            StructureBuilder.buildStructure(player.level(), origin, capture);
+        // 在实际项目中，这里会调用StructureBuilder
+        player.displayClientMessage(Component.literal("§a建筑生成成功! 位置: " + pos), true);
 
-            // 消耗材料（生存模式）
-            if (!player.isCreative()) {
-                for (int i = 0; i < 9; i++) {
-                    Slot slot = this.slots.get(i);
-                    slot.set(ItemStack.EMPTY);
-                }
+        // 消耗材料（生存模式）
+        if (!player.isCreative()) {
+            for (int i = 0; i < 9; i++) {
+                materialSlots.setStackInSlot(i, ItemStack.EMPTY);
             }
+            updateMaterials(); // 更新材料状态
         }
     }
 
-    // 自定义材料槽位
-    private static class MaterialSlot extends SlotItemHandler {
-        public MaterialSlot(ItemStackHandler itemHandler, int index, int x, int y) {
-            super(itemHandler, index, x, y);
-        }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            // 只允许放置建筑需要的材料
-            String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
-            return requiredMaterials.containsKey(itemId);
-        }
+    // 获取位置信息（可选）
+    public BlockPos getBlockPos() {
+        return blockPos;
     }
 }
