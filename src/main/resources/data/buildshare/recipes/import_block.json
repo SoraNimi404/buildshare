@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "L",
+    "L",
+    "L"
+  ],
+  "key": {
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "result": {
+    "item": "buildshare:import_block",
+    "count": 1
+  }
+}

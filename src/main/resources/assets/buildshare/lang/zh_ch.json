@@ -1,0 +1,8 @@
+{
+  "block.buildshare.export_marker": "导出标记方块",
+  "item.buildshare.export_marker": "导出标记方块",
+  "item.buildshare.export_stick": "导出木棍",
+  "block.buildshare.import_block": "导入方块",
+  "item.buildshare.import_block": "导入方块",
+  "itemGroup.buildshare": "建筑分享"
+}

@@ -1,14 +1,39 @@
 package com.soranimi404.buildshare.block;
 
+import com.soranimi404.buildshare.menu.ImportMenu;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.network.NetworkHooks;
 
 public class ImportBlock extends Block {
-    public ImportBlock() {
-        super(BlockBehaviour.Properties.of()
-                .mapColor(MapColor.COLOR_BLUE)
-                .strength(2.5f)
-                .requiresCorrectToolForDrops());
+
+    public ImportBlock(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos,
+                                 Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+            // 打开结构选择菜单
+            MenuProvider menuProvider = new SimpleMenuProvider(
+                    (containerId, playerInventory, playerEntity) ->
+                            new ImportMenu(containerId, playerInventory),
+                    Component.literal("选择建筑")
+            );
+
+            NetworkHooks.openScreen(serverPlayer, menuProvider, pos);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }

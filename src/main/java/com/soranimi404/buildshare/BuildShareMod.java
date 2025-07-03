@@ -1,8 +1,9 @@
 package com.soranimi404.buildshare;
 
-import com.soranimi404.buildshare.init.ModBlocks;
-import com.soranimi404.buildshare.init.ModItems;
-import com.soranimi404.buildshare.init.ModTabs;
+import com.soranimi404.buildshare.event.ModEvents;
+import com.soranimi404.buildshare.init.*;
+import com.soranimi404.buildshare.network.PacketHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -18,5 +19,10 @@ public class BuildShareMod {
         ModItems.ITEMS.register(modEventBus);
         ModTabs.register(modEventBus);
 
+        MinecraftForge.EVENT_BUS.register(ModEvents.class);
+
+        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+        ModMenus.MENUS.register(modEventBus);
+        PacketHandler.register();
     }
 }
