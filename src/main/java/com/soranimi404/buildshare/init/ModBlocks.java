@@ -24,9 +24,10 @@ public class ModBlocks {
     );
     public static final RegistryObject<Block> IMPORT_BLOCK = BLOCKS.register(
             "import_block",
-            () -> new ExportMarkerBlock(BlockBehaviour.Properties.of()
+            () -> new ImportBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(2.0f)
                     .sound(SoundType.WOOD))
+
     );
 }

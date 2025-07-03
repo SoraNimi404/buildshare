@@ -74,8 +74,6 @@ public class StructureLoader {
             capture.metadata.author = metadata.getString("author");
             capture.metadata.created = metadata.getLong("created");
             capture.metadata.size = metadata.getIntArray("size");
-
-            // 实际项目中会加载更多数据...
             return capture;
         } catch (IOException e) {
             e.printStackTrace();

@@ -82,12 +82,11 @@ public class MaterialSubmitScreen extends AbstractContainerScreen<MaterialSubmit
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // 检查是否点击生成按钮
+
         if (menu.canGenerate() &&
                 mouseX >= x + 100 && mouseX <= x + 150 &&
                 mouseY >= y + 150 && mouseY <= y + 170) {
 
-            // 调用菜单的无参数方法
             menu.generateStructure();
             return true;
         }
@@ -96,7 +95,7 @@ public class MaterialSubmitScreen extends AbstractContainerScreen<MaterialSubmit
     }
 
     private String getItemName(String itemId) {
-        // 使用新的 ResourceLocation 解析方式避免弃用警告
+
         ResourceLocation resource = ResourceLocation.tryParse(itemId);
         if (resource != null) {
             Item item = ForgeRegistries.ITEMS.getValue(resource);

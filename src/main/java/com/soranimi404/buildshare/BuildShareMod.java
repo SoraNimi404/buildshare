@@ -6,6 +6,7 @@ import com.soranimi404.buildshare.network.PacketHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod("buildshare")
@@ -25,4 +26,13 @@ public class BuildShareMod {
         ModMenus.MENUS.register(modEventBus);
         PacketHandler.register();
     }
+    private void commonSetup(FMLCommonSetupEvent event) {
+        PacketHandler.register();
+    }
+
+
+
+
+
+
 }
