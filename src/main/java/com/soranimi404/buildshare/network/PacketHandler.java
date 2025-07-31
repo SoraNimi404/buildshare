@@ -14,6 +14,23 @@ public class PacketHandler {
     );
 
     public static void register() {
-        // 目前不需要注册任何包
+        int id = 0;
+        // 注册打开界面包
+        INSTANCE.registerMessage(
+                id++,
+                OpenExportNameScreenPacket.class,
+                OpenExportNameScreenPacket::encode,
+                OpenExportNameScreenPacket::new,
+                OpenExportNameScreenPacket::handle
+        );
+
+        // 注册导出名称包
+        INSTANCE.registerMessage(
+                id++,
+                ExportNamePacket.class,
+                ExportNamePacket::encode,
+                ExportNamePacket::new,
+                ExportNamePacket::handle
+        );
     }
 }

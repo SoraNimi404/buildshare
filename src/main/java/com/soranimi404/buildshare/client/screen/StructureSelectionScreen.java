@@ -35,25 +35,7 @@ public class StructureSelectionScreen extends AbstractContainerScreen<StructureS
         // 绘制UI背景
         guiGraphics.blit(CONTAINER_TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // 绘制标题
-        guiGraphics.drawString(
-                font,
-                "选择要导入的建筑",
-                x + 8,
-                y + 6,
-                0x404040, // 深灰色
-                false
-        );
 
-        // 绘制说明文本
-        guiGraphics.drawString(
-                font,
-                "点击文件直接生成建筑",
-                x + 8,
-                y + 20,
-                0x404040,
-                false
-        );
 
         // 绘制结构文件列表
         drawStructureFiles(guiGraphics, x, y);
