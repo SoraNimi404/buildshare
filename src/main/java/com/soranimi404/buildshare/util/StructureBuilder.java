@@ -16,9 +16,18 @@ import java.util.Map;
 
 public class StructureBuilder {
 
-    // 生成建筑
+    // 修改方法签名，接受 Level 参数
     public static void buildStructure(Level level, BlockPos origin, BuildShareData.StructureCapture capture) {
-        if (!(level instanceof ServerLevel serverLevel)) return;
+        // 检查是否是服务器端
+        if (!(level instanceof ServerLevel serverLevel)) {
+            // 如果不是服务器端，发送错误消息
+            if (level.isClientSide) {
+                level.players().forEach(player ->
+                        player.displayClientMessage(Component.literal("§c只能在服务器端生成建筑！"), true)
+                );
+            }
+            return;
+        }
 
         // 按Y坐标排序（从下到上生成）
         List<Map.Entry<BlockPos, BlockState>> sortedBlocks = new ArrayList<>(capture.blocks.entrySet());
@@ -27,23 +36,26 @@ public class StructureBuilder {
         for (Map.Entry<BlockPos, BlockState> entry : sortedBlocks) {
             BlockPos relativePos = entry.getKey();
             BlockState state = entry.getValue();
-            BlockPos worldPos = origin.offset(relativePos.getX(), relativePos.getY(), relativePos.getZ());
+            BlockPos worldPos = origin.offset(
+                    relativePos.getX(),
+                    relativePos.getY(),
+                    relativePos.getZ()
+            );
 
             // 设置方块状态
-            level.setBlock(worldPos, state, 3);
+            serverLevel.setBlock(worldPos, state, 3);
 
-            // 设置方块实体
+            // 设置方块实体数据
             if (capture.tileEntities.containsKey(relativePos)) {
-                BlockEntity blockEntity = level.getBlockEntity(worldPos);
+                BlockEntity blockEntity = serverLevel.getBlockEntity(worldPos);
                 if (blockEntity != null) {
                     blockEntity.load(capture.tileEntities.get(relativePos));
                 }
             }
         }
 
-        level.players().forEach(player ->
-                player.displayClientMessage(Component.literal(
-                        "§a建筑生成完成!"), true)
+        serverLevel.players().forEach(player ->
+                player.displayClientMessage(Component.literal("§a建筑生成完成!"), true)
         );
     }
 }

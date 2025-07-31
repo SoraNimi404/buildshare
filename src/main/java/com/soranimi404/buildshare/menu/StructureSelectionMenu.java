@@ -1,6 +1,8 @@
 package com.soranimi404.buildshare.menu;
 
+import com.soranimi404.buildshare.data.BuildShareData;
 import com.soranimi404.buildshare.init.ModMenus;
+import com.soranimi404.buildshare.util.StructureBuilder;
 import com.soranimi404.buildshare.util.StructureLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,8 +13,8 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -77,6 +79,11 @@ public class StructureSelectionMenu extends AbstractContainerMenu {
         }
     }
 
+    // 添加这个方法供屏幕使用
+    public List<Path> getStructureFiles() {
+        return this.structureFiles;
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         return ItemStack.EMPTY; // 禁止物品移动
@@ -88,14 +95,23 @@ public class StructureSelectionMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public void clicked(int slotId, int dragType, net.minecraft.world.inventory.ClickType clickType, Player player) {
+    public void clicked(int slotId, int dragType, ClickType clickType, Player player) {
         if (slotId >= 0 && slotId < 9 && slotId < structureFiles.size()) {
             Path selectedFile = structureFiles.get(slotId);
-            String fileName = selectedFile.getFileName().toString();
-
-            // 打开材料提交界面
-            if (player instanceof ServerPlayer serverPlayer) {
-                MaterialSubmitMenu.open(serverPlayer, blockPos, fileName);
+            if (player instanceof ServerPlayer) {
+                // 直接加载并生成结构
+                BuildShareData.StructureCapture capture = StructureLoader.loadStructure(selectedFile);
+                if (capture != null) {
+                    StructureBuilder.buildStructure(
+                            player.level(),
+                            blockPos, // 以导入方块位置为起点
+                            capture
+                    );
+                    player.displayClientMessage(Component.literal("§a建筑生成成功！"), true);
+                } else {
+                    player.displayClientMessage(Component.literal("§c加载建筑失败！"), true);
+                }
+                player.closeContainer(); // 关闭菜单
             }
         }
         super.clicked(slotId, dragType, clickType, player);
