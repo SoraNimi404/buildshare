@@ -1,0 +1,13 @@
+{
+  "block.buildshare.export_marker": "Export Marker",
+  "item.buildshare.export_marker": "Export Marker",
+  "item.buildshare.export_stick": "Export Stick",
+  "block.buildshare.import_block": "Import Block",
+  "item.buildshare.import_block": "Import Block",
+  "itemGroup.buildshare": "BuildShare",
+  "screen.buildshare.export_name.title": "Export Building Name",
+  "screen.buildshare.export_name.subtitle": "Name your building for export (English only)",
+  "screen.buildshare.export_name.placeholder": "Enter name...",
+  "screen.buildshare.export_name.confirm": "Export",
+  "screen.buildshare.export_name.cancel": "Cancel"
+}

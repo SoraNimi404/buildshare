@@ -1,0 +1,13 @@
+{
+  "block.buildshare.export_marker": "导出标记方块",
+  "item.buildshare.export_marker": "导出标记方块",
+  "item.buildshare.export_stick": "导出木棍",
+  "block.buildshare.import_block": "导入方块",
+  "item.buildshare.import_block": "导入方块",
+  "itemGroup.buildshare": "建筑分享",
+  "screen.buildshare.export_name.title": "自定义建筑名称",
+  "screen.buildshare.export_name.subtitle": "为导出的建筑命名（仅限英文）",
+  "screen.buildshare.export_name.placeholder": "输入名称...",
+  "screen.buildshare.export_name.confirm": "确认导出",
+  "screen.buildshare.export_name.cancel": "取消"
+}
