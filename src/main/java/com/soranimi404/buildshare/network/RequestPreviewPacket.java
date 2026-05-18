@@ -41,7 +41,17 @@ public class RequestPreviewPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
 
-            Path file = Paths.get("buildshare", "structures", fileName + ".nbt");
+            // 防止路径遍历攻击：只允许字母数字、中文、下划线、连字符
+            if (!fileName.matches("[\\w\\u4e00-\\u9fff-]+")) {
+                player.displayClientMessage(Component.literal("§c非法的文件名！"), true);
+                return;
+            }
+            Path structuresDir = Paths.get("buildshare", "structures").toAbsolutePath().normalize();
+            Path file = structuresDir.resolve(fileName + ".nbt").normalize();
+            if (!file.startsWith(structuresDir)) {
+                player.displayClientMessage(Component.literal("§c非法的文件路径！"), true);
+                return;
+            }
             BuildShareData.StructureCapture capture = StructureLoader.loadStructure(file);
             if (capture == null || capture.blocks.isEmpty()) {
                 player.displayClientMessage(Component.literal("§c加载建筑数据失败！"), true);

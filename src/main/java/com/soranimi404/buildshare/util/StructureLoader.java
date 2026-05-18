@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,15 +58,18 @@ public class StructureLoader {
                 capture.metadata.name = metadata.getString("name");
                 capture.metadata.author = metadata.getString("author");
                 capture.metadata.created = metadata.getLong("created");
-                capture.metadata.size = metadata.getIntArray("size");
+                int[] sizeArray = metadata.getIntArray("size");
+                capture.metadata.size = sizeArray.length >= 3 ? sizeArray : new int[]{0, 0, 0};
             }
 
             // 加载调色板
+            List<BlockState> paletteList = new ArrayList<>();
             if (root.contains("palette", Tag.TAG_LIST)) {
                 ListTag paletteTag = root.getList("palette", Tag.TAG_COMPOUND);
                 for (int i = 0; i < paletteTag.size(); i++) {
                     BlockState state = NbtUtils.readBlockState(blockGetter, paletteTag.getCompound(i));
                     capture.palette.put(state, i);
+                    paletteList.add(state);
                 }
             }
 
@@ -77,15 +81,15 @@ public class StructureLoader {
 
                     // 读取位置
                     int[] posArray = blockTag.getIntArray("pos");
+                    if (posArray.length < 3) continue;
                     BlockPos pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
 
                     // 读取方块状态
                     int stateIndex = blockTag.getInt("state");
                     BlockState state = null;
 
-                    // 通过索引查找状态
-                    if (stateIndex >= 0 && stateIndex < capture.palette.size()) {
-                        state = (BlockState) capture.palette.keySet().toArray()[stateIndex];
+                    if (stateIndex >= 0 && stateIndex < paletteList.size()) {
+                        state = paletteList.get(stateIndex);
                     }
 
                     if (state != null) {
